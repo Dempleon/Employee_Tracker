@@ -34,7 +34,13 @@ async function mainMenu() {
         switch(answer.main_menu) {
             case 'View all departments':
                 viewDepartments();
+                break;
             case 'View all roles':
+                viewRoles();
+                break;
+            case 'View all employees':
+                viewEmployees();
+                break;
 
         }
 
@@ -52,7 +58,14 @@ function viewDepartments(){
     });
 }
 function viewRoles() {
-    DOMQuad.query(`SELECT * FROM roles`)
+    db.query(`SELECT * FROM roles`, (err, result) => {
+        console.log(result);
+    })
+}
+function viewEmployees() {
+    db.query(`SELECT * FROM employees`, (err, result) => {
+        console.log(result);
+    })
 }
 
 mainMenu();
