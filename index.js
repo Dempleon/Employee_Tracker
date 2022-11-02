@@ -1,8 +1,9 @@
 // const express = require('express');
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
+const cTable = require('console.table');
 
-
+// create connection to database
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -30,7 +31,6 @@ async function mainMenu() {
             ]
         },
     ]).then((answer) => {
-        console.log(answer);
         switch(answer.main_menu) {
             case 'View all departments':
                 viewDepartments();
@@ -41,7 +41,8 @@ async function mainMenu() {
             case 'View all employees':
                 viewEmployees();
                 break;
-
+            case 'Quit':
+                process.exit();
         }
 
         mainMenu();
@@ -53,18 +54,19 @@ async function mainMenu() {
 
 
 function viewDepartments(){
-    db.query('SELECT * FROM departments', (err, result) => {
-        console.log(result);
+    db.query('SELECT * FROM departments ORDER BY name', (err, result) => {
+        console.table('\nDepartments',result);
     });
 }
 function viewRoles() {
-    db.query(`SELECT * FROM roles`, (err, result) => {
-        console.log(result);
+    db.query(`SELECT roles.id, roles.title, departments.name AS department, roles.salary FROM roles INNER JOIN departments on roles.department_id = departments.id`, (err, result) => {
+        console.table('\nRoles',result);
     })
 }
 function viewEmployees() {
-    db.query(`SELECT * FROM employees`, (err, result) => {
-        console.log(result);
+
+    db.query('SELECT employees.id, employees.first_name, employees.last_name, roles.title, departments.name AS department, roles.salary, employees.manager_id as manager FROM employees INNER JOIN roles on employees.role_id = roles.id INNER JOIN departments on roles.department_id = departments.id ORDER BY employees.last_name;', (err, result) => {
+        console.table('\nEmployees',result);
     })
 }
 
