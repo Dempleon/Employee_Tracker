@@ -12,7 +12,7 @@ const db = mysql.createConnection({
 });
 
 
-async function mainMenu() {
+function mainMenu() {
     inquirer.prompt([
         {
             type: 'list',
@@ -30,7 +30,7 @@ async function mainMenu() {
                 'Quit'
             ]
         },
-    ]).then((answer) => {
+    ]).then(async (answer) => {
         switch(answer.main_menu) {
             case 'View all departments':
                 viewDepartments();
@@ -41,32 +41,51 @@ async function mainMenu() {
             case 'View all employees':
                 viewEmployees();
                 break;
+            case 'Add a department':
+                await addDepartment();
+                break;
             case 'Quit':
                 process.exit();
+                break;
         }
 
+    }).then(()=>{
         mainMenu();
     })
-
     
 }
 
 
 
-function viewDepartments(){
+function viewDepartments() {
     db.query('SELECT * FROM departments ORDER BY name', (err, result) => {
         console.table('\nDepartments',result);
     });
 }
+
 function viewRoles() {
     db.query(`SELECT roles.id, roles.title, departments.name AS department, roles.salary FROM roles INNER JOIN departments on roles.department_id = departments.id`, (err, result) => {
         console.table('\nRoles',result);
     })
 }
+
 function viewEmployees() {
 
     db.query('SELECT employees.id, employees.first_name, employees.last_name, roles.title, departments.name AS department, roles.salary, employees.manager_id as manager FROM employees INNER JOIN roles on employees.role_id = roles.id INNER JOIN departments on roles.department_id = departments.id ORDER BY employees.last_name;', (err, result) => {
         console.table('\nEmployees',result);
+    })
+}
+
+async function addDepartment() {
+    await inquirer.prompt({
+        type: 'input',
+        name: 'department',
+        message: 'What is the name of the department?'
+    }).then(async(answer) => {
+        console.log(answer.department);
+        db.query(`INSERT INTO departments (name) VALUES (?)`, answer.department, async(err, result) => {
+            console.log(`inserted ? into departments`, answer.department);
+        })
     })
 }
 
