@@ -44,6 +44,9 @@ function mainMenu() {
             case 'Add a department':
                 await addDepartment();
                 break;
+            case 'Add a role':
+                await addRole();
+                break;
             case 'Quit':
                 process.exit();
                 break;
@@ -89,4 +92,33 @@ async function addDepartment() {
     })
 }
 
+async function addRole() {
+    await inquirer.prompt([
+        {
+            type: 'input',
+            name: 'title',
+            message: 'What is the role title?'
+        },
+        {
+            type: 'input',
+            name: 'salary',
+            message: 'What is the salary?'
+        },
+        {
+            type: 'list',
+            name: 'dept',
+            message: 'What department?',
+            choices: [1, 2, 3, 4],
+        }
+    ]).then(async (answers) => {
+        
+        db.query(`INSERT INTO roles(title, department_id, salary) VALUES ('${answers.title}',${answers.dept},${answers.salary})`, async (err, result) => {
+            console.log('inserted ? into roles', answers.title);
+            console.log(err);
+        })
+        
+    })
+}
+
 mainMenu();
+
