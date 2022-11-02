@@ -47,9 +47,15 @@ function mainMenu() {
             case 'Add a role':
                 await addRole();
                 break;
+            case 'Add an employee':
+                await addEmployee();
+                break;
+            case 'Update an employee role':
+                await updateEmployee();
+                break;
             case 'Quit':
                 process.exit();
-                break;
+                
         }
 
     }).then(()=>{
@@ -73,8 +79,7 @@ function viewRoles() {
 }
 
 function viewEmployees() {
-
-    db.query('SELECT employees.id, employees.first_name, employees.last_name, roles.title, departments.name AS department, roles.salary, employees.manager_id as manager FROM employees INNER JOIN roles on employees.role_id = roles.id INNER JOIN departments on roles.department_id = departments.id ORDER BY employees.last_name;', (err, result) => {
+    db.query('SELECT employees.id, employees.first_name, employees.last_name, roles.title, departments.name AS department, roles.salary, employees.manager_id as manager FROM employees INNER JOIN roles on employees.role_id = roles.id INNER JOIN departments on roles.department_id = departments.id ORDER BY employees.id;', (err, result) => {
         console.table('\nEmployees',result);
     })
 }
@@ -93,6 +98,12 @@ async function addDepartment() {
 }
 
 async function addRole() {
+    const deps = await db.promise().query('SELECT * FROM departments ORDER BY departments.id');
+    const departmentNames = [];
+    deps[0].forEach(element => {
+        departmentNames.push(element.name);
+    });
+
     await inquirer.prompt([
         {
             type: 'input',
@@ -108,17 +119,93 @@ async function addRole() {
             type: 'list',
             name: 'dept',
             message: 'What department?',
-            choices: [1, 2, 3, 4],
+            choices: departmentNames,
         }
     ]).then(async (answers) => {
-        
-        db.query(`INSERT INTO roles(title, department_id, salary) VALUES ('${answers.title}',${answers.dept},${answers.salary})`, async (err, result) => {
+        let dep_id;
+        for(let i = 0; i < departmentNames.length; i++) {
+            if(departmentNames[i] === answers.dept) {
+                console.log(departmentNames[i]);
+                dep_id = i + 1;
+            }
+        }
+        db.query(`INSERT INTO roles(title, department_id, salary) VALUES ('${answers.title}',${dep_id},${answers.salary})`, async (err, result) => {
             console.log('inserted ? into roles', answers.title);
             console.log(err);
         })
-        
     })
 }
+
+async function addEmployee() {
+    var roles = await db.promise().query('SELECT * FROM roles ORDER BY roles.id');
+    roles = roles[0];
+
+    var roleTitles = [];
+    roles.forEach(element => {
+        roleTitles.push(element.title);
+    });
+    console.log(roleTitles);
+    var managers = await db.promise().query('SELECT * FROM employees ORDER BY employees.id');
+    managers = managers[0];
+
+    var managerNames = [];
+    managers.forEach(manager => {
+        managerNames.push(manager.first_name);
+    });
+    console.log(managerNames);
+    await inquirer.prompt([
+        {
+            type: 'input',
+            name: 'first_name',
+            message: "What is the employee's first name?"
+        },
+        {
+            type: 'input',
+            name: 'last_name',
+            message: "What is the employee's last name?"
+        },
+        {
+            type: 'list',
+            name: 'role',
+            message: "What is the employee's role?",
+            choices: roleTitles,
+        },
+        {
+            type: 'list',
+            name: 'manager',
+            message: "What is the manager's id?",
+            choices: managerNames,
+        }
+    ]).then(async (answers) => {
+
+        let role_id;
+        for(let i = 0; i < roleTitles.length; i++) {
+            if(roleTitles[i] === answers.role) {
+                console.log(roleTitles[i]);
+                role_id = i + 1;
+            }
+        }
+
+        let manager_id;
+        for(let i = 0; i < managerNames.length; i++) {
+            if(managerNames[i] === answers.manager) {
+                console.log(managerNames[i]);
+                manager_id = i + 1;
+            }
+        }
+
+        db.query(`INSERT INTO employees(first_name, last_name, role_id, manager_id) VALUES ('${answers.first_name}','${answers.last_name}',${role_id}, ${manager_id})`, async (err, result) => {
+            console.log('inserted ? into roles', answers.title);
+            console.log(err);
+        })
+    })
+}
+
+async function updateEmployee() {
+    
+}
+
+
 
 mainMenu();
 
