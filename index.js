@@ -92,6 +92,9 @@ async function addDepartment() {
     }).then(async (answer) => {
         db.query(`INSERT INTO departments (name) VALUES (?)`, answer.department, async (err, result) => {
             console.log(`inserted ${answer.department} into departments`);
+            if(err) {
+                console.log(err);
+            }
         })
     })
 }
@@ -130,7 +133,9 @@ async function addRole() {
         }
         db.query(`INSERT INTO roles(title, department_id, salary) VALUES ('${answers.title}',${dep_id},${answers.salary})`, async (err, result) => {
             console.log(`Inserted ${answers.title} into roles`);
-
+            if(err) {
+                console.log(err);
+            }
         })
     })
 }
@@ -191,8 +196,10 @@ async function addEmployee() {
         }
 
         db.query(`INSERT INTO employees(first_name, last_name, role_id, manager_id) VALUES ('${answers.first_name}','${answers.last_name}',${role_id}, ${manager_id})`, async (err, result) => {
-            console.log('inserted ? ? into employees', [answers.first_name, answers.last_name]);
-
+            console.log(`inserted  ${answers.first_name} ${answers.last_name} into employees`);
+            if(err) {
+                console.log(err);
+            }
         })
     })
 }
@@ -235,7 +242,9 @@ async function updateEmployee() {
         var role_id = roleTitles.indexOf(answer.role) + 1;
         db.query(`UPDATE employees SET employees.role_id = ${role_id} WHERE employees.id = ${employee_id}`, async (err, result) => {
             console.log(`Updated ${answer.employee} role to ${answer.role}`);
-            console.log(err);
+            if(err) {
+                console.log(err);
+            }
         })
     })
 }
